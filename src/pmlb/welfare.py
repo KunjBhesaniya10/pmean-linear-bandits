@@ -41,3 +41,30 @@ def p_mean_regret_curve(expected_rewards, mu_star, p):
     i.e. an estimate of E[mu_{I_t}], as in the paper's definition.
     """
     return mu_star - running_p_mean(expected_rewards, p)
+
+
+def contextual_p_mean_regret_curve(expected_rewards, optimal_rewards, p):
+    """M_p(r*_1..r*_t) - M_p(E[r_1], ..., E[r_t]) for every t.
+
+    With a fixed arm set r*_t = mu* and this is `p_mean_regret_curve`. With
+    contexts the benchmark is the p-mean welfare of the policy that always
+    shows each round's best candidate.
+    """
+    return running_p_mean(optimal_rewards, p) - running_p_mean(expected_rewards, p)
+
+
+def group_utilities(expected_rewards, optimal_rewards, round_groups, G):
+    """Normalised utility of each group: sum of E[reward] over the rounds a member
+    of the group arrived, divided by the same sum for the per-round optimum.
+
+    `round_groups` is (T, m): a user can belong to one group per attribute.
+    Groups that never arrive get NaN.
+    """
+    er = np.asarray(expected_rewards, dtype=np.float64)
+    rs = np.asarray(optimal_rewards, dtype=np.float64)
+    got, best = np.zeros(G), np.zeros(G)
+    for col in np.asarray(round_groups).T:
+        got += np.bincount(col, weights=er, minlength=G)
+        best += np.bincount(col, weights=rs, minlength=G)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return got / best

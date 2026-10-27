@@ -1,12 +1,13 @@
 """Reproduce Section 5 of Sarkar, Pandey & Ray Chowdhury (2025), experiments (a)-(f).
 
-    python -m experiments.mab_reproduce            # all experiments
-    python -m experiments.mab_reproduce a c        # a subset
+    python -m experiments.phase1_mab_reproduce            # all experiments
+    python -m experiments.phase1_mab_reproduce a c        # a subset
 
 Instances are drawn exactly as in the authors' main.py (np.random.seed(42),
 then the four instances in order), so the arm means match theirs. Per-run
 randomness uses our own seeds. Averaged expected-reward curves are cached in
-results/cache/ and reused on later runs unless --force is given.
+results/cache/phase1_mab/ and reused on later runs unless --force is given.
+Figures go to plots/phase1_mab/, tables and curves to results/phase1_mab/.
 """
 import argparse
 import csv
@@ -22,7 +23,9 @@ from pmlb.welfare import p_mean_regret_curve
 
 N_TRIALS = 50
 K = 50
-RESULTS = "results"
+RESULTS = os.path.join("results", "phase1_mab")
+PLOTS = os.path.join("plots", "phase1_mab")
+CACHE = os.path.join("results", "cache", "phase1_mab")
 
 
 def make_instances():
@@ -52,7 +55,7 @@ def experiment_specs(inst):
 
 
 def cached_run(expt, algorithm, instance, T, p, force):
-    path = os.path.join(RESULTS, "cache", f"{expt}_{algorithm}_p{p}.npz")
+    path = os.path.join(CACHE, f"{expt}_{algorithm}_p{p}.npz")
     if os.path.exists(path) and not force:
         d = np.load(path)
         return d["expected_rewards"], d["taus"]
@@ -78,8 +81,8 @@ def run_experiment(expt, spec, force=False):
                          final_regret=regret[-1], regret_at_1e4=regret[9999],
                          mean_tau=taus.mean(), std_tau=taus.std()))
     ylabel = "Nash regret" if all(p == 0 for _, p in runs) else "p-mean regret"
-    os.makedirs(os.path.join(RESULTS, "figures"), exist_ok=True)
-    plot_curves(curves, T, title, ylabel, os.path.join(RESULTS, "figures", f"expt_{expt}.png"))
+    os.makedirs(PLOTS, exist_ok=True)
+    plot_curves(curves, T, title, ylabel, os.path.join(PLOTS, f"expt_{expt}.png"))
 
     # Downsampled curves (log grid) so the numbers are in the repo without the caches.
     os.makedirs(os.path.join(RESULTS, "curves"), exist_ok=True)

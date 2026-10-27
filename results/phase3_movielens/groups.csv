@@ -1,0 +1,31 @@
+group,attribute,share_of_rounds
+male,gender,0.7147
+female,gender,0.2853
+age <18,age,0.0376
+age 18-24,age,0.1794
+age 25-34,age,0.3467
+age 35-44,age,0.2003
+age 45-49,age,0.0924
+age 50-55,age,0.0807
+age 56+,age,0.0629
+other,occupation,0.1174
+academic/educator,occupation,0.0884
+artist,occupation,0.0440
+clerical/admin,occupation,0.0283
+college/grad student,occupation,0.1227
+customer service,occupation,0.0187
+doctor/health care,occupation,0.0399
+executive/managerial,occupation,0.1137
+farmer,occupation,0.0033
+homemaker,occupation,0.0159
+K-12 student,occupation,0.0335
+lawyer,occupation,0.0215
+programmer,occupation,0.0641
+retired,occupation,0.0243
+sales/marketing,occupation,0.0485
+scientist,occupation,0.0236
+self-employed,occupation,0.0409
+technician/engineer,occupation,0.0839
+tradesman/craftsman,occupation,0.0121
+unemployed,occupation,0.0113
+writer,occupation,0.0442
