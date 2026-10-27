@@ -1,13 +1,13 @@
 """Reproduce Section 5 of Sarkar, Pandey & Ray Chowdhury (2025), experiments (a)-(f).
 
-    python -m experiments.phase1_mab_reproduce            # all experiments
-    python -m experiments.phase1_mab_reproduce a c        # a subset
+    python -m experiments.mab_reproduction            # all experiments
+    python -m experiments.mab_reproduction a c        # a subset
 
 Instances are drawn exactly as in the authors' main.py (np.random.seed(42),
 then the four instances in order), so the arm means match theirs. Per-run
 randomness uses our own seeds. Averaged expected-reward curves are cached in
-results/cache/phase1_mab/ and reused on later runs unless --force is given.
-Figures go to plots/phase1_mab/, tables and curves to results/phase1_mab/.
+results/cache/mab_reproduction/ and reused on later runs unless --force is given.
+Figures go to plots/mab_reproduction/, tables and curves to results/mab_reproduction/.
 """
 import argparse
 import csv
@@ -23,9 +23,9 @@ from pmlb.welfare import p_mean_regret_curve
 
 N_TRIALS = 50
 K = 50
-RESULTS = os.path.join("results", "phase1_mab")
-PLOTS = os.path.join("plots", "phase1_mab")
-CACHE = os.path.join("results", "cache", "phase1_mab")
+RESULTS = os.path.join("results", "mab_reproduction")
+PLOTS = os.path.join("plots", "mab_reproduction")
+CACHE = os.path.join("results", "cache", "mab_reproduction")
 
 
 def make_instances():

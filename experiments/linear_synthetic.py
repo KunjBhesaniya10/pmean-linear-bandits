@@ -1,10 +1,10 @@
-"""Phase 3, synthetic data: p-mean regret and group fairness of Explore-then-LinUCB vs LinUCB.
+"""Synthetic data: p-mean regret and group fairness of Explore-then-LinUCB vs LinUCB.
 
-    python -m experiments.phase3_synthetic [a] [b] [c] [--force]
+    python -m experiments.linear_synthetic [a] [b] [c] [--force]
 
 (a) benign fixed-arm linear bandit (K = 50, d = 6, i.i.d. positive features);
-(b) the rare-direction instance of Phase 2, final p-mean regret across p
-    (reuses the Phase 2 runs from results/cache/);
+(b) the rare-direction instance of `linear_stopping_rule`, final p-mean regret
+    across p (reuses its runs from results/cache/);
 (c) two-group contextual bandit where the minority owns a feature block that
     is non-zero only in its own rounds, for minority shares 30%, 10% and 3%.
 """
@@ -14,12 +14,12 @@ import os
 import numpy as np
 
 from experiments.common import cached_linear, dirs, write_csv, write_curves, write_table
-from experiments.phase2_stopping_rule import PHASE as PHASE2, make_env as rare_env
+from experiments.linear_stopping_rule import NAME as STOPPING_TAG, make_env as rare_env
 from pmlb.linear.envs import GAUSSIAN, fixed_arm_env, random_instance, two_group_instance
 from pmlb.plotting import ALGO_STYLE, plot_curves, plot_lines, plot_tradeoff
 from pmlb.welfare import contextual_p_mean_regret_curve, group_utilities
 
-PHASE = "phase3_synthetic"
+NAME = "linear_synthetic"
 KAPPA = 10.0
 PS = [1, 0, -1, -2, -5]
 MAIN = ["linucb", "lin_greedy", "explore_then_linucb_naive", "explore_then_linucb", "explore_then_greedy"]
@@ -44,11 +44,11 @@ def regret_table(tag, env, T, n_trials, algos, force):
 
 
 def expt_a(force):
-    res_dir, plot_dir = dirs(PHASE)
+    res_dir, plot_dir = dirs(NAME)
     T, n = 200_000, 50
     X, theta = random_instance(K=50, d=6)
     env = fixed_arm_env(X, theta, sigma2=0.25, reward_type=GAUSSIAN)
-    rows, final, curves = regret_table(f"{PHASE}_a", env, T, n, MAIN, force)
+    rows, final, curves = regret_table(f"{NAME}_a", env, T, n, MAIN, force)
     write_table(os.path.join(res_dir, "a_benign_summary.md"),
                 ["algorithm", "p", "exploration rounds", "p-mean regret at t=1e4", "p-mean regret at T"], rows)
     for p in (0, -2):
@@ -61,15 +61,15 @@ def expt_a(force):
 
 
 def expt_b(force):
-    from experiments.phase2_stopping_rule import N_TRIALS, T
+    from experiments.linear_stopping_rule import N_TRIALS, T
 
     env = rare_env()
-    _, final, _ = regret_table(PHASE2, env, T, N_TRIALS, MAIN, force)
+    _, final, _ = regret_table(STOPPING_TAG, env, T, N_TRIALS, MAIN, force)
     return final
 
 
 def expt_c(force):
-    res_dir, plot_dir = dirs(PHASE)
+    res_dir, plot_dir = dirs(NAME)
     T, n = 100_000, 30
     rows, csv_rows, points = [], [], []
     min_u = {a: [] for a in CONTEXTUAL}
@@ -80,7 +80,7 @@ def expt_c(force):
         rg = env.round_groups(T)
         for a in CONTEXTUAL:
             for p in ([0] if a in ("linucb", "lin_greedy") else [0, -2]):
-                er, taus, _ = cached_linear(f"{PHASE}_c_share{share}", a, env, T, p, n, KAPPA, force)
+                er, taus, _ = cached_linear(f"{NAME}_c_share{share}", a, env, T, p, n, KAPPA, force)
                 u = group_utilities(er, rstar, rg, env.G)
                 agg = er.sum() / rstar.sum()
                 r0 = contextual_p_mean_regret_curve(er, rstar, 0)[-1]
@@ -113,7 +113,7 @@ def main():
     ap.add_argument("experiments", nargs="*", default=["a", "b", "c"])
     ap.add_argument("--force", action="store_true")
     args = ap.parse_args()
-    res_dir, plot_dir = dirs(PHASE)
+    res_dir, plot_dir = dirs(NAME)
     if "a" in args.experiments or "b" in args.experiments:
         final_a, desc = expt_a(args.force)
         final_b = expt_b(args.force)
@@ -124,7 +124,7 @@ def main():
             write_csv(os.path.join(res_dir, f"{name}_regret_vs_p.csv"), ["algorithm"] + [f"p={p}" for p in PS],
                       [[a] + [f"{v:.6g}" for v in final[a]] for a in MAIN])
         with open(os.path.join(res_dir, "instances.md"), "w") as f:
-            f.write(desc + "\n\n(b) see results/phase2_stopping_rule/instance.md\n\n"
+            f.write(desc + "\n\n(b) see results/linear_stopping_rule/instance.md\n\n"
                     "(c) d = 8 (z = [1, 1{minority}], 4 item features), K = 10 of 200 items per round, "
                     "Bernoulli rewards, T = 100000, 30 runs\n")
     if "c" in args.experiments:

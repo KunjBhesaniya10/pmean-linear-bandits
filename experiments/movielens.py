@@ -1,7 +1,7 @@
-"""Phase 3, MovieLens-1M: utility vs fairness across gender, age and occupation groups.
+"""MovieLens-1M: utility vs fairness across gender, age and occupation groups.
 
     python scripts/download_movielens.py      # once
-    python -m experiments.phase3_movielens [--force]
+    python -m experiments.movielens [--force]
 
 Semi-synthetic linear contextual bandit built in `pmlb.data.movielens`
 (d = 180, K = 20 candidate movies per round, Bernoulli "like" rewards).
@@ -17,7 +17,7 @@ from pmlb.data.movielens import make_env
 from pmlb.plotting import ALGO_STYLE, plot_curves, plot_grouped_bars, plot_tradeoff
 from pmlb.welfare import contextual_p_mean_regret_curve, group_utilities, p_mean
 
-PHASE = "phase3_movielens"
+NAME = "movielens"
 T = 50_000
 N_TRIALS = 20
 KAPPAS = [10.0, 1.0]
@@ -47,7 +47,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--force", action="store_true")
     args = ap.parse_args()
-    res_dir, plot_dir = dirs(PHASE)
+    res_dir, plot_dir = dirs(NAME)
     env = make_env(T)
     rstar = env.optimal_rewards(T)
     rg = env.round_groups(T)
@@ -57,7 +57,7 @@ def main():
 
     rows, util_rows, points, curves, bars = [], [], [], [], {}
     for a, p, kappa in configs():
-        er, taus, _ = cached_linear(PHASE, a, env, T, p, N_TRIALS, kappa or 10.0, args.force)
+        er, taus, _ = cached_linear(NAME, a, env, T, p, N_TRIALS, kappa or 10.0, args.force)
         u = group_utilities(er, rstar, rg, env.G)
         agg = er.sum() / rstar.sum()
         regrets = [contextual_p_mean_regret_curve(er, rstar, q)[-1] for q in REGRET_PS]

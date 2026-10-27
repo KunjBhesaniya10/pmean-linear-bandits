@@ -11,7 +11,7 @@ ALGO_STYLE = {
     "explore_then_ucb": ("Explore-then-UCB", "#eb6834"),
     "ncb": ("NCB", "#eb6834"),
     "ucb": ("UCB (no exploration phase)", "#1baf7a"),
-    # linear (Phase 2-3)
+    # linear contextual bandits
     "explore_then_linucb": ("Explore-then-LinUCB (ours)", "#2a78d6"),
     "explore_then_linucb_global": ("Explore-then-LinUCB, one stop for all groups", "#eda100"),
     "explore_then_linucb_naive": ("Explore-then-LinUCB, naive rule", "#eb6834"),

@@ -1,4 +1,4 @@
-"""Helpers shared by the Phase 2-3 experiment scripts: cached Monte Carlo runs and output paths."""
+"""Helpers shared by the linear-bandit experiment scripts: cached Monte Carlo runs and output paths."""
 import csv
 import os
 import zlib
@@ -13,8 +13,8 @@ PLOTS = "plots"
 NO_EXPLORATION = ("linucb", "lin_greedy")  # their runs do not depend on p or kappa
 
 
-def dirs(phase):
-    res, plots = os.path.join(RESULTS, phase), os.path.join(PLOTS, phase)
+def dirs(name):
+    res, plots = os.path.join(RESULTS, name), os.path.join(PLOTS, name)
     os.makedirs(res, exist_ok=True)
     os.makedirs(plots, exist_ok=True)
     return res, plots

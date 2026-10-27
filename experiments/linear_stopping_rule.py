@@ -1,6 +1,6 @@
-"""Phase 2: does the adapted stopping rule learn rare feature directions before exploiting?
+"""Does the adapted stopping rule learn rare feature directions before exploiting?
 
-    python -m experiments.phase2_stopping_rule [--force]
+    python -m experiments.linear_stopping_rule [--force]
 
 Fixed-arm linear bandit (d = 6, K = 400) where only 4 arms (1%) use the two
 rare feature directions, and the optimum (0.95) is one of them; the best
@@ -18,7 +18,7 @@ from pmlb.linear.envs import GAUSSIAN, fixed_arm_env, rare_direction_instance
 from pmlb.plotting import ALGO_STYLE, plot_curves, plot_grouped_bars, plot_lines
 from pmlb.welfare import contextual_p_mean_regret_curve
 
-PHASE = "phase2_stopping_rule"
+NAME = "linear_stopping_rule"
 T = 200_000
 N_TRIALS = 50
 KAPPA = 10.0
@@ -36,7 +36,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--force", action="store_true")
     args = ap.parse_args()
-    res_dir, plot_dir = dirs(PHASE)
+    res_dir, plot_dir = dirs(NAME)
     env = make_env()
     means = env.all_means()[0]
     mu_star, mu_2 = np.sort(means)[-1], np.sort(means)[-2]
@@ -45,7 +45,7 @@ def main():
     rows, curves0, tau_by_p, found0 = [], [], {a: [] for a in ALGOS}, []
     for algo in ALGOS:
         for p in PS:
-            er, taus, finals = cached_linear(PHASE, algo, env, T, p, N_TRIALS, KAPPA, args.force)
+            er, taus, finals = cached_linear(NAME, algo, env, T, p, N_TRIALS, KAPPA, args.force)
             regret = contextual_p_mean_regret_curve(er, rstar, p)
             found = np.mean(finals > (mu_star + mu_2) / 2)
             rows.append([ALGO_STYLE[algo][0], f"{p}", f"{taus.mean():.0f} ± {taus.std():.0f}",
