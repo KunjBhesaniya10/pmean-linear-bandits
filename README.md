@@ -190,8 +190,8 @@ Users arrive uniformly at random, with 20 random candidate movies per round; T =
 - **Greedy is best on every measure**, including the worst group: random users and candidate sets make the data
   diverse enough that exploiting alone learns every group's coordinates, as in Bastani et al. (2021) and
   Raghavan et al. (2018).
-- **LinUCB's exploration falls on the small groups:** its utility is lowest for farmers (0.85), age 56+ and
-  homemakers, whose coordinates stay uncertain longest, so they keep getting exploratory recommendations.
+- **LinUCB's exploration falls on the small groups:** its utility is lowest for farmers (0.85), unemployed users and
+  homemakers (0.88), and among age bands for 56+, whose coordinates stay uncertain longest, so they keep getting exploratory recommendations.
 - **Per-group stopping makes this sharper:** large groups exploit after a few thousand rounds while small groups
   (unemployed 1.1%, farmer 0.3%, retired 2.4%) keep exploring, so worst-group utility falls to 0.69-0.71. Lowering p
   to −2 lengthens exploration and lowers both aggregate and worst-group utility.
