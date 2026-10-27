@@ -174,11 +174,11 @@ Users arrive uniformly at random, with 20 random candidate movies per round; T =
 
 | algorithm | κ | exploration rounds | aggregate utility | Nash regret | worst occupation | group welfare M₋₂ |
 |---|---|---|---|---|---|---|
-| Greedy | - | 0 | **0.996** | **0.003** | 0.986 (homemaker) | **0.996** |
-| LinUCB | - | 0 | 0.930 | 0.072 | 0.846 (farmer) | 0.914 |
-| Explore-then-LinUCB, naive | 1 | 2,943 | 0.923 | 0.076 | 0.843 (farmer) | 0.908 |
-| Explore-then-LinUCB (ours) | 1 | 12,388 | 0.897 | 0.102 | 0.710 (unemployed) | 0.861 |
-| Explore-then-Greedy (ours) | 1 | 12,599 | 0.928 | 0.076 | 0.709 (unemployed) | 0.887 |
+| Greedy | - | 0 | **0.997** | **0.003** | 0.983 (homemaker) | **0.996** |
+| LinUCB | - | 0 | 0.930 | 0.072 | 0.849 (farmer) | 0.914 |
+| Explore-then-LinUCB, naive | 1 | 2,950 | 0.923 | 0.077 | 0.836 (farmer) | 0.907 |
+| Explore-then-LinUCB (ours) | 1 | 12,395 | 0.897 | 0.103 | 0.708 (unemployed) | 0.861 |
+| Explore-then-Greedy (ours) | 1 | 12,578 | 0.928 | 0.075 | 0.710 (unemployed) | 0.887 |
 | any explore-then | 10 | 50,000 | 0.72-0.76 | 0.22-0.26 | 0.68-0.73 | 0.73-0.76 |
 
 (p = 0; the full table with p = −2 and the worst gender and age groups is in
