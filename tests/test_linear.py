@@ -5,19 +5,21 @@ import pytest
 from pmlb.data.movielens import user_features
 from pmlb.linear import ALGORITHMS
 from pmlb.linear.algorithms import _update, _widths
-from pmlb.linear.envs import GAUSSIAN, fixed_arm_env, random_instance, two_group_instance
+from pmlb.linear.envs import BERNOULLI, GAUSSIAN, fixed_arm_env, random_instance, two_group_instance
 from pmlb.runner import run_linear
 from pmlb.welfare import contextual_p_mean_regret_curve, group_utilities
 
 
 def _envs():
     X, theta = random_instance(K=8, d=3)
-    return [fixed_arm_env(X, theta, 0.25, GAUSSIAN), two_group_instance(300, K=5, n_items=20)]
+    return [fixed_arm_env(X, theta, 0.25, BERNOULLI), two_group_instance(300, K=5, n_items=20)]
 
 
 @pytest.mark.parametrize("name", sorted(ALGORITHMS))
 @pytest.mark.parametrize("env_id", [0, 1])
 def test_kernel_writes_candidate_means_and_is_seeded(name, env_id):
+    if name.startswith("lin_nash") and env_id == 1:
+        pytest.skip("LinNash is defined for a fixed arm set")
     env = _envs()[env_id]
     T = 300
     out1, out2 = np.empty(T), np.empty(T)
@@ -87,3 +89,18 @@ def test_movielens_user_features_one_hot():
     assert [names[g] for g in ugroups[0]] == ["female", "age <18", "farmer"]
     assert [names[g] for g in ugroups[1]] == ["male", "age 56+", "other"]
     assert attrs.count("occupation") == 21
+
+
+def test_lin_nash_eliminates_to_the_best_arm():
+    X = np.eye(4)
+    env = fixed_arm_env(X, np.array([0.1, 0.3, 0.5, 0.9]), 0.25, BERNOULLI)
+    res = run_linear("lin_nash_tuned", env, 100000, 0.0, 4, n_jobs=1)
+    assert res.expected_rewards[-1000:].mean() > 0.89
+
+
+def test_lin_nash_part_one_reward_lower_bound():
+    """Exploration distribution U keeps E[reward] >= mu* / (d + 1) (Lemma 5)."""
+    from pmlb.linear.lin_nash import mvee_weights
+    X, theta = random_instance(K=40, d=5, seed=3)
+    u = mvee_weights(X)
+    assert u @ (X @ theta) >= (X @ theta).max() / 6

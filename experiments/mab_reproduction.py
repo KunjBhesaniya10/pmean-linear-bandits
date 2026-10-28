@@ -42,15 +42,15 @@ def experiment_specs(inst):
     """name -> (instance, T, title, [(algorithm, p), ...])"""
     specs = {
         "a": (inst["a"], 10_000_000, "(a) Nash regret, Bernoulli arms",
-              [("ncb", 0), ("welfarist_ucb", 0), ("ucb", 0)]),
+              [("ncb", 0), ("welfarist_ucb", 0)]),
         "b": (inst["b"], 1_000_000, "(b) Nash regret, Gaussian arms (σ = 20)",
-              [("ncb", 0), ("welfarist_ucb", 0), ("ucb", 0)]),
+              [("ncb", 0), ("welfarist_ucb", 0)]),
         "f": (inst["f"], 1_000_000, "(f) Welfarist-UCB across p, Gaussian arms",
               [("welfarist_ucb", p) for p in (1, 0, -1, -2, -5)]),
     }
     for name, p in (("c", 0.5), ("d", -0.5), ("e", -1.5)):
         specs[name] = (inst["cde"], 1_000_000, f"({name}) p-mean regret, p = {p}, Gaussian arms",
-                       [("explore_then_ucb", p), ("welfarist_ucb", p), ("ucb", p)])
+                       [("explore_then_ucb", p), ("welfarist_ucb", p)])
     return dict(sorted(specs.items()))
 
 

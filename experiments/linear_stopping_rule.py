@@ -14,7 +14,7 @@ import os
 import numpy as np
 
 from experiments.common import cached_linear, dirs, write_curves, write_table
-from pmlb.linear.envs import GAUSSIAN, fixed_arm_env, rare_direction_instance
+from pmlb.linear.envs import BERNOULLI, fixed_arm_env, rare_direction_instance
 from pmlb.plotting import ALGO_STYLE, plot_curves, plot_grouped_bars, plot_lines
 from pmlb.welfare import contextual_p_mean_regret_curve
 
@@ -24,12 +24,12 @@ N_TRIALS = 50
 KAPPA = 10.0
 PS = [1, 0, -1, -2, -5]
 ALGOS = ["explore_then_linucb_naive", "explore_then_linucb_design_only", "explore_then_linucb_coverage_only",
-         "explore_then_linucb", "explore_then_greedy_naive", "explore_then_greedy", "linucb", "lin_greedy"]
+         "explore_then_linucb", "explore_then_greedy_naive", "explore_then_greedy", "lin_nash", "lin_nash_tuned"]
 
 
 def make_env():
     X, theta = rare_direction_instance(n_common=396, common_high=0.85)
-    return fixed_arm_env(X, theta, sigma2=0.25, reward_type=GAUSSIAN)
+    return fixed_arm_env(X, theta, sigma2=0.25, reward_type=BERNOULLI)
 
 
 def main():
@@ -61,7 +61,7 @@ def main():
     write_curves(os.path.join(res_dir, "nash_regret_curves.csv"), T, [(c[0], c[2]) for c in curves0])
     plot_curves(curves0, T, "Nash regret, rare-direction instance (1% of arms span 2 of 6 dims)",
                 "Nash regret", os.path.join(plot_dir, "nash_regret.png"))
-    explore_algos = [a for a in ALGOS if a not in ("linucb", "lin_greedy")]
+    explore_algos = [a for a in ALGOS if not a.startswith("lin_nash")]
     plot_lines(PS, [(ALGO_STYLE[a][0], ALGO_STYLE[a][1], tau_by_p[a]) for a in explore_algos],
                "Exploration length vs p (horizon 2e5)", "p", "exploration rounds",
                os.path.join(plot_dir, "exploration_vs_p.png"), logy=True, xticks=PS)

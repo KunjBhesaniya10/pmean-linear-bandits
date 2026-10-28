@@ -10,15 +10,16 @@ ALGO_STYLE = {
     "welfarist_ucb": ("Welfarist-UCB", "#2a78d6"),
     "explore_then_ucb": ("Explore-then-UCB", "#eb6834"),
     "ncb": ("NCB", "#eb6834"),
-    "ucb": ("UCB (no exploration phase)", "#1baf7a"),
     # linear contextual bandits
     "explore_then_linucb": ("Explore-then-LinUCB (ours)", "#2a78d6"),
     "explore_then_linucb_global": ("Explore-then-LinUCB, one stop for all groups", "#eda100"),
     "explore_then_linucb_naive": ("Explore-then-LinUCB, naive rule", "#eb6834"),
-    "explore_then_linucb_design_only": ("design only (naive rule)", "#008300"),
+    "explore_then_linucb_design_only": ("design only (naive rule)", "#9a6b2f"),
     "explore_then_linucb_coverage_only": ("coverage rule only (uniform)", "#6250d6"),
     "explore_then_greedy": ("Explore-then-Greedy (ours)", "#e87ba4"),
     "explore_then_greedy_naive": ("Explore-then-Greedy, naive rule", "#e34948"),
+    "lin_nash": ("LinNash (Sawarni et al.)", "#1baf7a"),
+    "lin_nash_tuned": ("LinNash, width constant 1", "#008300"),
     "linucb": ("LinUCB", "#1baf7a"),
     "lin_greedy": ("Greedy (ridge)", "#555555"),
 }

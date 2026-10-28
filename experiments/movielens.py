@@ -23,19 +23,15 @@ N_TRIALS = 20
 KAPPAS = [10.0, 1.0]
 PS = [0, -2]  # runs; p = 1 and -1 share the p = 0 run (p_a = 1)
 REGRET_PS = [1, 0, -2]
-ALGOS = ["linucb", "lin_greedy", "explore_then_linucb_naive", "explore_then_linucb",
-         "explore_then_linucb_global", "explore_then_greedy"]
+ALGOS = ["explore_then_linucb_naive", "explore_then_linucb", "explore_then_linucb_global", "explore_then_greedy"]
 ATTRS = ["gender", "age", "occupation"]
 
 
 def configs():
     for a in ALGOS:
-        if a in ("linucb", "lin_greedy"):
-            yield a, 0, None
-        else:
-            for kappa in KAPPAS:
-                for p in PS:
-                    yield a, p, kappa
+        for kappa in KAPPAS:
+            for p in PS:
+                yield a, p, kappa
 
 
 def label(a, p, kappa):
@@ -85,7 +81,7 @@ def main():
     plot_curves(curves, T, "MovieLens-1M, Nash regret (κ = 1 for explore-then)", "Nash regret",
                 os.path.join(plot_dir, "nash_regret.png"))
 
-    shown = ["linucb", "lin_greedy", "explore_then_linucb_naive", "explore_then_linucb"]
+    shown = ["explore_then_linucb_naive", "explore_then_linucb", "explore_then_greedy"]
     for x in ATTRS:
         idx = np.where(attr == x)[0]
         ticks = [f"{names[i]} ({100 * share[i]:.1f}%)" for i in idx]

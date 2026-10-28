@@ -163,28 +163,8 @@ def ncb(means, T, sigma2, reward_type, p, seed, out):
     return tau
 
 
-@njit(cache=True)
-def ucb(means, T, sigma2, reward_type, p, seed, out):
-    """Plain UCB with Welfarist-UCB's Phase II index 2 sqrt(2 sigma^2 log T / n_i),
-    after pulling each arm once. Isolates the effect of the exploration phase."""
-    np.random.seed(seed)
-    k = means.size
-    sigma = np.sqrt(sigma2)
-    n = np.zeros(k, np.int64)
-    sums = np.zeros(k)
-    mu = np.zeros(k)
-    scale = 2.0 * np.sqrt(2.0 * sigma2 * np.log(T))
-
-    for t in range(T):
-        a = _ucb_arm(mu, n, scale)
-        _pull(a, means, sigma, reward_type, n, sums, mu)
-        out[t] = means[a]
-    return 0
-
-
 ALGORITHMS = {
     "welfarist_ucb": welfarist_ucb,
     "explore_then_ucb": explore_then_ucb,
     "ncb": ncb,
-    "ucb": ucb,
 }

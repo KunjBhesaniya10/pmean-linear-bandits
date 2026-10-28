@@ -1,7 +1,5 @@
 | algorithm | p | κ | exploration rounds | aggregate utility | p-mean regret, p=1 | p-mean regret, p=0 | p-mean regret, p=-2 | worst gender group | worst age group | worst occupation group | group welfare M_-2 over all 30 groups |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| LinUCB | - | - | 0 | 0.9298 | 0.0620 | 0.0721 | 0.1459 | 0.910 (female) | 0.892 (age 56+) | 0.849 (farmer) | 0.9136 |
-| Greedy (ridge) | - | - | 0 | 0.9967 | 0.0029 | 0.0030 | 0.0031 | 0.996 (female) | 0.994 (age <18) | 0.983 (homemaker) | 0.9959 |
 | Explore-then-LinUCB, naive rule | 0 | 10 | 50000 | 0.7560 | 0.2154 | 0.2164 | 0.2185 | 0.752 (male) | 0.741 (age 56+) | 0.726 (writer) | 0.7592 |
 | Explore-then-LinUCB, naive rule | -2 | 10 | 50000 | 0.7555 | 0.2158 | 0.2169 | 0.2190 | 0.752 (male) | 0.740 (age 56+) | 0.725 (writer) | 0.7586 |
 | Explore-then-LinUCB, naive rule | 0 | 1 | 2950 | 0.9228 | 0.0682 | 0.0767 | 0.1222 | 0.905 (female) | 0.889 (age 56+) | 0.836 (farmer) | 0.9073 |

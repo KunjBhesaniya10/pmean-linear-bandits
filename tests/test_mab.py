@@ -16,8 +16,8 @@ def test_kernel_writes_valid_rewards_and_is_seeded(name):
     assert tau1 == tau2 and np.array_equal(out1, out2)
 
 
-@pytest.mark.parametrize("name", ["welfarist_ucb", "ucb"])
-def test_learns_best_arm_on_easy_instance(name):
+def test_learns_best_arm_on_easy_instance():
+    name = "welfarist_ucb"
     inst = MABInstance(np.array([100.0, 300.0, 500.0, 900.0]), GAUSSIAN, 400.0)
     res = run_mab(name, inst, 20000, 0.0, 4, n_jobs=1)
     assert res.expected_rewards[-1000:].mean() > 0.99 * inst.mu_star

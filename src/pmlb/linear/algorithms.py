@@ -63,6 +63,7 @@ import numpy as np
 from numba import njit
 
 from ..envs import sample_reward
+from .lin_nash import lin_nash, lin_nash_tuned
 
 LAMBDA = 1.0
 KAPPA = 10.0  # default kappa in LCB >= kappa |p_a| width: Welfarist-UCB's constant
@@ -334,6 +335,8 @@ def explore_then_greedy_naive(Z, Y, theta, users, cands, ugroups, G, T, sigma2, 
 
 
 ALGORITHMS = {
+    "lin_nash": lin_nash,
+    "lin_nash_tuned": lin_nash_tuned,
     "linucb": linucb,
     "lin_greedy": lin_greedy,
     "explore_then_linucb": explore_then_linucb,

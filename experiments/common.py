@@ -10,7 +10,7 @@ from pmlb.runner import run_linear
 
 RESULTS = "results"
 PLOTS = "plots"
-NO_EXPLORATION = ("linucb", "lin_greedy")  # their runs do not depend on p or kappa
+NO_EXPLORATION = ("linucb", "lin_greedy", "lin_nash", "lin_nash_tuned")  # runs do not depend on p or kappa
 
 
 def dirs(name):

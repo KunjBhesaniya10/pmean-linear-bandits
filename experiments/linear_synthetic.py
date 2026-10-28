@@ -15,16 +15,16 @@ import numpy as np
 
 from experiments.common import cached_linear, dirs, write_csv, write_curves, write_table
 from experiments.linear_stopping_rule import NAME as STOPPING_TAG, make_env as rare_env
-from pmlb.linear.envs import GAUSSIAN, fixed_arm_env, random_instance, two_group_instance
+from pmlb.linear.envs import BERNOULLI, fixed_arm_env, random_instance, two_group_instance
 from pmlb.plotting import ALGO_STYLE, plot_curves, plot_lines, plot_tradeoff
 from pmlb.welfare import contextual_p_mean_regret_curve, group_utilities
 
 NAME = "linear_synthetic"
 KAPPA = 10.0
 PS = [1, 0, -1, -2, -5]
-MAIN = ["linucb", "lin_greedy", "explore_then_linucb_naive", "explore_then_linucb", "explore_then_greedy"]
-CONTEXTUAL = ["linucb", "lin_greedy", "explore_then_linucb_naive", "explore_then_linucb",
-              "explore_then_linucb_global", "explore_then_greedy"]
+MAIN = ["lin_nash", "lin_nash_tuned", "explore_then_linucb_naive", "explore_then_linucb", "explore_then_greedy"]
+CONTEXTUAL = ["explore_then_linucb_naive", "explore_then_linucb", "explore_then_linucb_global",
+              "explore_then_greedy"]
 SHARES = [0.3, 0.1, 0.03]
 MARKERS = {1.0: "o", -2.0: "^"}
 
@@ -47,7 +47,7 @@ def expt_a(force):
     res_dir, plot_dir = dirs(NAME)
     T, n = 200_000, 50
     X, theta = random_instance(K=50, d=6)
-    env = fixed_arm_env(X, theta, sigma2=0.25, reward_type=GAUSSIAN)
+    env = fixed_arm_env(X, theta, sigma2=0.25, reward_type=BERNOULLI)
     rows, final, curves = regret_table(f"{NAME}_a", env, T, n, MAIN, force)
     write_table(os.path.join(res_dir, "a_benign_summary.md"),
                 ["algorithm", "p", "exploration rounds", "p-mean regret at t=1e4", "p-mean regret at T"], rows)
@@ -79,7 +79,7 @@ def expt_c(force):
         rstar = env.optimal_rewards(T)
         rg = env.round_groups(T)
         for a in CONTEXTUAL:
-            for p in ([0] if a in ("linucb", "lin_greedy") else [0, -2]):
+            for p in (0, -2):
                 er, taus, _ = cached_linear(f"{NAME}_c_share{share}", a, env, T, p, n, KAPPA, force)
                 u = group_utilities(er, rstar, rg, env.G)
                 agg = er.sum() / rstar.sum()
