@@ -10,11 +10,11 @@
 | LinNash, width constant 1 | -1 | 13194 | 0.2352 | 0.0836 |
 | LinNash, width constant 1 | -2 | 13194 | 0.2354 | 0.0862 |
 | LinNash, width constant 1 | -5 | 13194 | 0.2362 | 0.0951 |
-| Explore-then-LinUCB, naive rule | 1 | 2850 | 0.0577 | 0.0051 |
-| Explore-then-LinUCB, naive rule | 0 | 2850 | 0.0610 | 0.0053 |
-| Explore-then-LinUCB, naive rule | -1 | 2850 | 0.0644 | 0.0056 |
-| Explore-then-LinUCB, naive rule | -2 | 10399 | 0.1781 | 0.0135 |
-| Explore-then-LinUCB, naive rule | -5 | 61395 | 0.1786 | 0.0805 |
+| Welfarist-UCB unchanged | 1 | 2850 | 0.0577 | 0.0051 |
+| Welfarist-UCB unchanged | 0 | 2850 | 0.0610 | 0.0053 |
+| Welfarist-UCB unchanged | -1 | 2850 | 0.0644 | 0.0056 |
+| Welfarist-UCB unchanged | -2 | 10399 | 0.1781 | 0.0135 |
+| Welfarist-UCB unchanged | -5 | 61395 | 0.1786 | 0.0805 |
 | Explore-then-LinUCB (ours) | 1 | 10264 | 0.2145 | 0.0119 |
 | Explore-then-LinUCB (ours) | 0 | 10264 | 0.2147 | 0.0132 |
 | Explore-then-LinUCB (ours) | -1 | 10264 | 0.2149 | 0.0148 |

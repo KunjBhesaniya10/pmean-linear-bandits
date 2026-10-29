@@ -120,8 +120,8 @@ radius `β = σ√(2 log T) + ‖θ*‖` for every algorithm.
    (`explore_then_linucb_global`) keeps everyone exploring until every group is certified.
 4. *Phase II:* LinUCB, or greedy exploitation (`explore_then_greedy`), the way deployed recommenders usually run.
 
-The **naive transfer** (`explore_then_linucb_naive`) uses uniform sampling and the paper's best-arm rule on the
-current candidates with one global stop.
+**Welfarist-UCB unchanged** (`explore_then_linucb_naive`) is the ablation baseline: Welfarist-UCB carried over without
+our changes, that is, uniform sampling and the paper's best-arm rule on the current candidates with one global stop.
 
 **Baselines.** Like the paper, we compare against earlier fairness-aware algorithms rather than against plain UCB:
 
@@ -133,7 +133,7 @@ current candidates with one global stop.
   `E_U⟨x,θ*⟩ ≥ ⟨x*,θ*⟩/(d+1)`, still holds), and Part II eliminates against the best lower bound among *surviving*
   arms. With the paper's width constant 6 it eliminates almost nothing within our horizons, so we also run it with
   constant 1 ("LinNash, width constant 1"), the analogue of our κ = 1.
-- **The naive transfer** of Welfarist-UCB above, the linear counterpart of the earlier explore-then baselines.
+- **Welfarist-UCB unchanged** (above), the linear counterpart of the earlier explore-then baselines.
 
 **Does the rule learn rare directions? (`linear_stopping_rule`.)** Fixed-arm instance, d = 6, K = 400, where only 4 arms
 (1%) use the 2 rare dimensions and the optimum (0.95) is one of them; the best common arm earns 0.85; Bernoulli
@@ -142,14 +142,14 @@ rewards, T = 2·10⁵, 50 runs ([table](results/linear_stopping_rule/summary.md)
 ![](plots/linear_stopping_rule/found_optimum.png)
 ![](plots/linear_stopping_rule/nash_regret.png)
 
-- The naive rule stops after ~5,200 rounds, when a *common* arm is certified. With a LinUCB Phase II this is harmless,
-  since optimism keeps exploring. With a **greedy Phase II only 76% of runs ever find the rare optimum**; our rule
+- Welfarist-UCB unchanged stops after ~5,200 rounds, when a *common* arm is certified. With a LinUCB Phase II this is
+  harmless, since optimism keeps exploring. With a **greedy Phase II only 76% of runs ever find the rare optimum**; our rule
   explores ~15,500 rounds and **100%** of runs find it.
 - The coverage rule needs the design step: with uniform sampling it never stops within T (the rare directions get 1%
   of the pulls); design-based sampling makes it stop.
 - Exploration grows with |p| like in the MAB case: about 3.6× from p ≥ −1 to p = −2, and at p = −5 our rule never
   stops within T ([plot](plots/linear_stopping_rule/exploration_vs_p.png)).
-- **Against LinNash:** final Nash regret is 0.013 (naive transfer) and 0.040 (ours) vs 0.094 for LinNash with
+- **Against LinNash:** final Nash regret is 0.013 (Welfarist-UCB unchanged) and 0.040 (ours) vs 0.094 for LinNash with
   constant 1 and 0.376 with the paper's constant, which never finds the rare optimum within T.
 
 ## Evaluation
@@ -160,17 +160,17 @@ rewards, T = 2·10⁵, 50 runs ([table](results/linear_stopping_rule/summary.md)
 ![](plots/linear_synthetic/c_minority_utility.png)
 
 - **(a) benign fixed-arm instance** (K = 50, d = 6, means 0.53-0.97) and **(b) the rare-direction instance**: for
-  p ≥ −1 the naive transfer has the lowest p-mean regret, then ours, then LinNash (Nash regret in (a): 0.0053, 0.013,
+  p ≥ −1 Welfarist-UCB unchanged has the lowest p-mean regret, then ours, then LinNash (Nash regret in (a): 0.0053, 0.013,
   0.081 with constant 1 and 0.24 with the paper's constant). For p < −1 the Welfarist stopping rule scales with p²,
   so the explore-then variants lose ground: ours falls behind LinNash with constant 1 at p = −2 in (b) and at p = −5
-  in both, and at p = −5 the naive transfer is also behind it in (b) (0.33 vs 0.19). LinNash's exploration does not
+  in both, and at p = −5 Welfarist-UCB unchanged is also behind it in (b) (0.33 vs 0.19). LinNash's exploration does not
   depend on p, which is exactly where it gains
   ([a](plots/linear_synthetic/a_benign_regret_vs_p.png), [b](plots/linear_synthetic/b_rare_direction_regret_vs_p.png)).
 - **(c) two groups**, where the minority owns a feature block that is non-zero only in its own rounds and prefers
   different items (no LinNash here: it needs a fixed arm set). Certifying the minority to the same precision takes
   ~1/share times longer, and whoever explores pays for it: with per-group stopping the majority exploits early
   (utility 0.955) but the **minority drops to 0.75 at a 10% share and 0.67 at 3%** (it is never certified within T);
-  with one global stop everyone explores and aggregate utility falls to 0.70 (10%) and 0.62 (3%). The naive rule
+  with one global stop everyone explores and aggregate utility falls to 0.70 (10%) and 0.62 (3%). Welfarist-UCB unchanged
   stops on majority contexts and keeps the minority at ~0.95. [Trade-off plot](plots/linear_synthetic/c_tradeoff.png).
 
 ### MovieLens-1M ([results/movielens](results/movielens))
@@ -188,7 +188,7 @@ apply (the candidate set changes every round).
 
 | algorithm | κ | exploration rounds | aggregate utility | Nash regret | worst occupation | group welfare M₋₂ |
 |---|---|---|---|---|---|---|
-| Explore-then-LinUCB, naive | 1 | 2,950 | **0.923** | 0.077 | **0.836** (farmer) | **0.907** |
+| Welfarist-UCB unchanged | 1 | 2,950 | **0.923** | 0.077 | **0.836** (farmer) | **0.907** |
 | Explore-then-LinUCB (ours) | 1 | 12,395 | 0.897 | 0.103 | 0.708 (unemployed) | 0.861 |
 | Explore-then-Greedy (ours) | 1 | 12,578 | 0.928 | **0.075** | 0.710 (unemployed) | 0.887 |
 | ours, one stop for all groups | 1 | 50,000 | 0.724 | 0.257 | 0.676 (writer) | 0.725 |
@@ -202,7 +202,7 @@ apply (the candidate set changes every round).
   κ = 1 (stop once the best lower bound exceeds the plausible items' widths).
 - **Per-group stopping puts the exploration cost on small groups:** large groups exploit after a few thousand rounds
   while small groups (unemployed 1.1%, farmer 0.3%, retired 2.4%) keep exploring, so worst-group utility falls to
-  0.69-0.71, against 0.84 for the naive rule. Lowering p to −2 lengthens exploration and lowers both aggregate and
+  0.69-0.71, against 0.84 for Welfarist-UCB unchanged. Lowering p to −2 lengthens exploration and lowers both aggregate and
   worst-group utility.
 
 ## Takeaways
@@ -212,7 +212,7 @@ apply (the candidate set changes every round).
    are rare. That version reliably learns the rare optimum before exploiting, which is what makes a greedy Phase II
    safe (100% vs 76% of runs).
 2. On the fixed-arm instances both explore-then variants beat LinNash (Nash regret, and every p ≥ −1) at our
-   horizons, with the naive transfer best. For strongly egalitarian p (−2, −5) the p²-scaled stopping rule makes
+   horizons, with Welfarist-UCB unchanged best. For strongly egalitarian p (−2, −5) the p²-scaled stopping rule makes
    them explore too long and LinNash with a smaller width constant catches up or wins.
 3. Learning a minority's own feature directions to the same precision costs about 1/(its share) times more rounds.
    Whoever explores pays for it: the minority itself with per-group stopping, everyone with a global stop.

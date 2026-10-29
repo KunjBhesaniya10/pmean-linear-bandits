@@ -1,4 +1,4 @@
-t,"Explore-then-LinUCB, naive rule",Explore-then-LinUCB (ours),"Explore-then-LinUCB, one stop for all groups",Explore-then-Greedy (ours)
+t,Welfarist-UCB unchanged,Explore-then-LinUCB (ours),"Explore-then-LinUCB, one stop for all groups",Explore-then-Greedy (ours)
 1,0.25631,0.113561,0.126956,0.118407
 2,0.222371,0.135854,0.0822064,0.110088
 3,0.201629,0.136693,0.0903119,0.122981
