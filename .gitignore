@@ -1,5 +1,5 @@
 results/cache/
-data/
+/data/
 __pycache__/
 *.pyc
 *.egg-info/
