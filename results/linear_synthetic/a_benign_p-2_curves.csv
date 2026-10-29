@@ -1,4 +1,4 @@
-t,LinNash (Sawarni et al.),"LinNash, width constant 1","Explore-then-LinUCB, naive rule",Explore-then-LinUCB (ours),Explore-then-Greedy (ours)
+t,LinNash (Sawarni et al.),"LinNash, width constant 1",Welfarist-UCB unchanged,Explore-then-LinUCB (ours),Explore-then-Greedy (ours)
 1,0.146986,0.162597,0.179145,0.180557,0.170321
 2,0.152876,0.162233,0.168227,0.199323,0.211373
 3,0.164927,0.157878,0.163815,0.211209,0.215302

@@ -52,7 +52,7 @@ Explore-then-LinUCB carries the two parts of Welfarist-UCB over to features.
   group. With a fixed arm set there is one group and one stopping time, as
   in Welfarist-UCB.
 
-`explore_then_linucb_naive` is the direct transfer for comparison: uniform
+`explore_then_linucb_naive` ("Welfarist-UCB unchanged") is the direct transfer for comparison: uniform
 exploration and the paper's best-arm rule on the current round's candidates.
 `explore_then_greedy*` replace Phase II by greedy exploitation, the way a
 deployed recommender usually runs once it stops exploring; there nothing
@@ -329,7 +329,7 @@ def explore_then_greedy(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward
 
 @njit(cache=True)
 def explore_then_greedy_naive(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed, out):
-    """Naive transfer with a greedy Phase II."""
+    """Welfarist-UCB unchanged, with a greedy Phase II."""
     return _explore_then_linucb(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed,
                                 out, False, False, True)
 

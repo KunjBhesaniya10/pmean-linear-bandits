@@ -1,4 +1,4 @@
-t,"Explore-then-LinUCB, naive rule",design only (naive rule),coverage rule only (uniform),Explore-then-LinUCB (ours),"Explore-then-Greedy, naive rule",Explore-then-Greedy (ours),LinNash (Sawarni et al.),"LinNash, width constant 1"
+t,Welfarist-UCB unchanged,design only (Welfarist-UCB rule),coverage rule only (uniform),Explore-then-LinUCB (ours),"Welfarist-UCB unchanged, greedy Phase II",Explore-then-Greedy (ours),LinNash (Sawarni et al.),"LinNash, width constant 1"
 1,0.363024,0.319975,0.353574,0.31138,0.402993,0.341021,0.381719,0.315434
 2,0.364225,0.368495,0.367503,0.364789,0.39671,0.361531,0.395379,0.359993
 3,0.369163,0.369377,0.369594,0.337944,0.387421,0.371693,0.401475,0.409662
