@@ -205,56 +205,6 @@ Both adaptations leave Phase I after a little over 1,000 rounds and then behave 
 
 # Appendix A: AI Prompts Used
 
-We used Claude (Anthropic) as an assistant during the project, mainly through a shared project workspace connected to our GitHub repo. Below are the prompts we gave it, copied from the chat history with dates. We cut long pasted parts and a few off-topic bits, but did not reword anything, so spelling is as typed. They are grouped by what they were for. The AI's answers are not included, only short notes in brackets where context is needed.
+We used Claude (Anthropic) as an assistant during the project, for reading and summarising papers, writing and restructuring code, checking results, and drafting this report.
 
-*[Team: prompts used outside this workspace (e.g. other chats used for the final slides or the final code changes, and any prompts by Dhruvraj) still need to be added here.]*
-
-## A.1 Research and planning
-
-1. (24 Oct) "we are starting with this project, understand and summarize the plan here first"
-2. (24 Oct) "which paper implements p mean welfare ?"
-3. (24 Oct) "either of berman or sarkar is our base" *[asked it to find and summarise the exact algorithm, stopping rule and experiments of the candidate papers]*
-4. (26 Oct) "so our base paper is sarkar at el, and we dont have any github repo, we will have to create a fresh one, and also what dataset will we use ?"
-5. (26 Oct) "is movie lens dataset is for linear bandits or normal phase 1 ?"
-6. (26 Oct) "cool so phase1 would be reproducing the results, and then extending it to linear setting, then test using both synthetic and actual datasets"
-7. (27 Oct) "linear bandits are exlored for only nash regret as per our prof"
-8. (28 Oct) "but let's be honest, if it could be extended then it would already had been done by some researcher, and we wouldn't just discover something new in 2 day project, we are just doing our independent study of extending it to p means, it will not work most probably as per me"
-9. (28 Oct) "can you also start another thread to review this paper and if it is relevant to our extension" *[uploaded arXiv:2601.22969, FairLinBandit]*
-10. (28 Oct) "NO, our project's goal is clear we would not change it, i just want to know how similar is their algorithm to what we did by extending their algorithm, and if the paper's algo is doing better, we can use it and cite it, but do not change any work just answer the question first"
-11. (29 Oct) "Dont just assume or speculate anything, what does it mean that it only handle one fixed arm? The algorithm is for general linear bandits right?"
-12. (29 Oct) "I still dont get it what's the difference bw contextual bandits amd linear bandits"
-
-## A.2 Code
-
-13. (27 Oct) "complete the remaining things also, maintain proper directory structure for results, plots etc"
-14. (27 Oct) "what is njit(cache=true)"
-15. (27 Oct) "dont use phase* names in the code/directory these were just for the planning it should not be in the project dircetory, and also we are implementing the welfarist UCB right ?"
-16. (27 Oct) "also how are we implementing linucb from the welfarist algorithm ? and what exactly we are changing in it ? are we following any other reference paper ?"
-17. (28 Oct) "what is the plain LinUCB ? is it average reward regret ? and for the normal ucb also the average regret would give better results may be but we are doing the nash regret right ? so why are we comparing it with normal ucb or linucb ? we need to verify the fairness of both right?"
-18. (28 Oct) "so is LinUCB's nash regret better than what we extended ?"
-19. (28 Oct) "but then why have they introduced welfarist UCB if the plain UCB is performing better ?"
-20. (28 Oct) "so why are we inserting plain UCB ourselved who told you to do that ?"
-21. (28 Oct) "yes if paper is not comparing the results with plain UCB why are we ? it does not make sense, and if we remove it, with what will we compare the linear extension results ?" *[then uploaded the LinNash paper so it would be implemented from the paper and not from memory]*
-22. (29 Oct) "and who told you to make 2 algorithms ?"
-23. (29 Oct) "ok just keep it and labelled as welfarist-UCB unchanged"
-
-## A.3 Testing and checking results
-
-24. (26 Oct) "what is this why are there test plan ?" *[about the test plan section in the first PR]*
-25. (27 Oct) "why is there a test directory"
-26. (27 Oct) "some updates are needed i will clone the repo, review the code and then will follow up from there"
-27. (27 Oct) "which movielens data set should i donwload from the source to replace your script method" / "1M enough ?"
-28. (27 Oct) "The official MovieLens download is blocked here, so the script falls back to a GitHub mirror of the same 1M ratings. that;s why i was downloading" / "the official movielens website is down that is why i am unable to download from there"
-29. (27 Oct) "are all results as expected ?"
-
-## A.4 Presentation
-
-30. (29 Oct) "what do we do in the project now for the presentation ? i am confused of what will we present ? what will we show that we did new/different/experimental study type etc given this paper also exists now"
-31. (29 Oct) "plain LinUCB does not have fairness right ?? our idea was to extend this fairness p mean to contextual linear bandits at the start, and we also need to provide intuition or idea behind how we tweaked the algorithm and why in that way particularly,"
-32. (29 Oct) "why would i even describe this in presentation ? there is no relation of linUCB here ? i would compare it with linNash no ? for p =0? are you even understanding the overall goal of the project, what will we experiment ? what will we compare the results with ? what will we justify etc ?"
-33. (29 Oct) "what;s the naive transfer ?"
-34. (30 Oct) "this is a DRAFT PRESENTATION (NOT FINAL), the results show that the naive transfer algorithm without introducing any other changes performs better than the 50% probability changes, why is this the case ? and then why did we introduce this changes if the naive is giving better regret ? please research on this honestly, i dont want to present any changes which are not well backed and are ad hoc"
-
-## A.5 Report and submission
-
-35. (5 Nov) "review the final code that i have pushed on the remote repo, this is the final code and also review the project presentation pdf that we have already presented to the TA and Profs, so now only report and repo submission is remaining" *[pasted the course submission instructions]* "first review the final code and topics we have kept, and then make a report, and then add some prompts in appendix"
+*[Team: list the AI prompts used in the project here.]*
