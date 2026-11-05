@@ -205,6 +205,51 @@ Both adaptations leave Phase I after a little over 1,000 rounds and then behave 
 
 # Appendix A: AI Prompts Used
 
-We used Claude (Anthropic) as an assistant during the project, for reading and summarising papers, writing and restructuring code, checking results, and drafting this report.
+We used Claude (Anthropic) as an assistant, through a project workspace connected to our GitHub repo. Most of our prompts were short follow-up questions, so as the TAs allowed, we have merged related prompts into one prompt per task and cleaned up typos. Each one keeps what we actually asked; nothing here is a request we did not make. Dates are from the chat history.
 
-*[Team: list the AI prompts used in the project here.]*
+## A.1 Research and planning
+
+**1. Understanding the project and finding the base paper (24–26 Oct).**
+"we are starting with this project, summarize the plan first. which paper actually implements p-mean welfare in bandits? our base should be either the Barman et al. paper or the Sarkar et al. one, find the exact papers and write down their algorithm, stopping rule, regret bounds and the experiments we need to reproduce. the paper text doesn't give the horizon T so check their code for it."
+
+**2. Choosing the dataset (26 Oct).**
+"our base paper is Sarkar et al. what dataset should we use? is MovieLens meant for the linear bandit part or for the reproduction? so the plan is: reproduce the results first, then extend to the linear setting, then test on both synthetic and real data. also is 1M enough or do we need a bigger MovieLens version?"
+
+**3. Positioning against prior work (27–28 Oct).**
+"our prof said linear bandits have only been explored for Nash regret, so cite that work (LinNash, Sawarni et al.). let's be honest here, if this extension was easy someone would have done it already, we are not discovering something new in a short project, this is our independent study of extending it to p-means and it may not work. word the README like that, no novelty claims."
+
+**4. Reviewing the FairLinBandit paper (28–29 Oct).** *[we uploaded arXiv:2601.22969]*
+"review this paper and tell me if it is relevant to our extension. don't change any of our work and don't add it as a baseline, our project goal stays the same. i just want to know how similar their algorithm is to what we did, step by step, and whether it does better. don't assume or speculate, what does it mean that it only handles a fixed arm set, isn't it for general linear bandits? and explain the difference between contextual bandits and linear bandits."
+
+## A.2 Code
+
+**5. Reproduction code (26 Oct).**
+"implement Welfarist-UCB, NCB and Explore-then-UCB from scratch and reproduce experiments (a)–(f) with the same instances as the authors' code, 50 runs each. we are implementing Welfarist-UCB right? push to main with a short commit and no co-author line."
+
+**6. Linear extension and repo structure (27 Oct).**
+"now do the linear part and the experiments, keep a proper directory structure for src, results, plots. don't use phase names in the code or folders, those were just for planning. explain how exactly we go from Welfarist-UCB to LinUCB, what we change in it and which reference papers each part comes from. also what is njit(cache=True)?"
+
+**7. Fixing the baselines (28 Oct).**
+"what is plain LinUCB, is it built for average regret? we are measuring Nash/p-mean regret so we have to check the fairness of both. why have they introduced Welfarist-UCB if plain UCB does better? and who said to add plain UCB? the paper doesn't compare with it so we shouldn't either. remove it, and if we remove it what do we compare the linear results with? implement LinNash from the paper I uploaded, not from memory."
+
+**8. Naming the variants (29 Oct).**
+"who told you to make 2 algorithms? what is the naive transfer exactly? ok keep it but label it as Welfarist-UCB unchanged everywhere, plots, tables and README."
+
+## A.3 Testing and checking results
+
+**9. Tests and data checks (26–27 Oct).**
+"why is there a test directory and a test plan, what do they check? i will clone the repo and review the code myself before we go further. the official MovieLens site is down for me, which file should I download, and how do we know the mirror is the same data?"
+
+**10. Sanity-checking results (27 Oct).**
+"are all the results as expected? tell me honestly what matched the paper and what didn't, and is LinUCB's Nash regret better than our extension?"
+
+**11. Checking the 50/50 change before presenting (30 Oct).**
+"this is a draft presentation, not final. the results show the naive transfer without any changes doing better than the 50% probability version. why is that, and why did we add this change if the naive one gives better regret? research this honestly, i don't want to present any change that is not well backed and ad hoc."
+
+## A.4 Presentation and report
+
+**12. Planning the presentation (29 Oct).**
+"what do we present now that this paper exists, what is new or different in our work, or is it more of an experimental study? plain LinUCB has no fairness and has nothing to do with our talk, we compare with LinNash at p = 0. our idea was to extend p-mean fairness to contextual linear bandits, so we need the intuition behind each tweak and why we did it that way. what will we experiment, what do we compare against and what do we justify?"
+
+**13. Final review and report (5 Nov).**
+"review the final code I pushed and the slides we presented, check the code folder against the submission rules (README with setup and how to run, requirements, no large data), then draft the report using the suggested sections and the topics that are in the code and slides. keep the language simple."
