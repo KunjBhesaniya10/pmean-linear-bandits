@@ -46,7 +46,7 @@ def run_trials(kernel_path, args, T, n_trials, seed=0, n_jobs=None):
     `args` are the kernel's leading arguments (everything before seed, out).
     """
     seeds = np.random.SeedSequence(seed).generate_state(n_trials) % (2**31 - 1)
-    n_jobs = min(n_jobs or os.cpu_count() or 1, n_trials)
+    n_jobs = min(n_jobs or min(os.cpu_count() or 1, 4), n_trials)
     chunks = [seeds[i::n_jobs] for i in range(n_jobs)]
     acc = np.zeros(T)
     taus, finals = [], []

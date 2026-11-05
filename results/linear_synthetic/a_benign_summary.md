@@ -10,6 +10,11 @@
 | LinNash, width constant 1 | -1 | 13194 | 0.2352 | 0.0836 |
 | LinNash, width constant 1 | -2 | 13194 | 0.2354 | 0.0862 |
 | LinNash, width constant 1 | -5 | 13194 | 0.2362 | 0.0951 |
+| FairLinUCB (Sarkar et al.) | 1 | 200000 | 0.2133 | 0.2134 |
+| FairLinUCB (Sarkar et al.) | 0 | 200000 | 0.2135 | 0.2136 |
+| FairLinUCB (Sarkar et al.) | -1 | 200000 | 0.2137 | 0.2138 |
+| FairLinUCB (Sarkar et al.) | -2 | 200000 | 0.2139 | 0.2141 |
+| FairLinUCB (Sarkar et al.) | -5 | 200000 | 0.2147 | 0.2148 |
 | Explore-then-LinUCB, naive rule | 1 | 2850 | 0.0577 | 0.0051 |
 | Explore-then-LinUCB, naive rule | 0 | 2850 | 0.0610 | 0.0053 |
 | Explore-then-LinUCB, naive rule | -1 | 2850 | 0.0644 | 0.0056 |
@@ -20,8 +25,3 @@
 | Explore-then-LinUCB (ours) | -1 | 10264 | 0.2149 | 0.0148 |
 | Explore-then-LinUCB (ours) | -2 | 38505 | 0.2152 | 0.0559 |
 | Explore-then-LinUCB (ours) | -5 | 200000 | 0.2158 | 0.2158 |
-| Explore-then-Greedy (ours) | 1 | 10237 | 0.2145 | 0.0115 |
-| Explore-then-Greedy (ours) | 0 | 10237 | 0.2147 | 0.0129 |
-| Explore-then-Greedy (ours) | -1 | 10237 | 0.2149 | 0.0144 |
-| Explore-then-Greedy (ours) | -2 | 38546 | 0.2151 | 0.0560 |
-| Explore-then-Greedy (ours) | -5 | 200000 | 0.2157 | 0.2158 |

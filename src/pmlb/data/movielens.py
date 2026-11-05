@@ -129,6 +129,10 @@ def fit_model(ratings, users, n_items=300, rank=4, ridge=1.0):
         A += F.T @ F
         b += F.T @ like[c]
     theta = np.linalg.solve(A + ridge * np.eye(dz * dy), b)
+    theta_scale = np.linalg.norm(theta)
+    if theta_scale > 0:
+        theta = theta / theta_scale
+        Y = Y * theta_scale
     return Z, Y, theta, ugroups, names, attrs, items
 
 

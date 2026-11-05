@@ -39,7 +39,6 @@ class MABInstance:
 
 
 def bernoulli_instance(k, low=0.005, high=1.0, sigma2=1.0, rng=np.random):
-    # sigma2 = 1 matches the reference code (the tight proxy for Bernoulli is 1/4).
     return MABInstance(rng.uniform(low, high, size=k), BERNOULLI, sigma2)
 
 

@@ -11,6 +11,7 @@ from pmlb.runner import run_linear
 RESULTS = "results"
 PLOTS = "plots"
 NO_EXPLORATION = ("linucb", "lin_greedy", "lin_nash", "lin_nash_tuned")  # runs do not depend on p or kappa
+_RAN = set()
 
 
 def dirs(name):
@@ -32,7 +33,7 @@ def cached_linear(tag, algorithm, env, T, p, n_trials, kappa=10.0, force=False):
     pa = p_run(algorithm, p)
     k = 0.0 if algorithm in NO_EXPLORATION else float(kappa)
     path = os.path.join(RESULTS, "cache", tag, f"{algorithm}_p{pa}_k{k}_T{T}_n{n_trials}.npz")
-    if os.path.exists(path) and not force:
+    if (os.path.exists(path) and not force) or (path in _RAN):
         d = np.load(path)
         return d["expected_rewards"], d["taus"], d["final_rewards"]
     print(f"  [{tag}] {algorithm} p_a={pa} kappa={k} T={T:.0e} ({n_trials} runs)", flush=True)
@@ -40,13 +41,14 @@ def cached_linear(tag, algorithm, env, T, p, n_trials, kappa=10.0, force=False):
     res = run_linear(algorithm, env, T, pa, n_trials, seed=seed, kappa=kappa)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     np.savez(path, expected_rewards=res.expected_rewards, taus=res.taus, final_rewards=res.final_rewards)
+    _RAN.add(path)
     return res.expected_rewards, res.taus, res.final_rewards
 
 
 def write_curves(path, T, named_curves):
     """Regret curves downsampled on a log grid of rounds."""
     ts = log_grid(T, start=1, num=300)
-    with open(path, "w", newline="") as f:
+    with open(path, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["t"] + [n for n, _ in named_curves])
         for t in ts:
@@ -55,7 +57,7 @@ def write_curves(path, T, named_curves):
 
 def write_table(path, header, rows):
     """Markdown table; rows are lists already formatted as strings."""
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         f.write("| " + " | ".join(header) + " |\n")
         f.write("|" + "---|" * len(header) + "\n")
         for r in rows:
@@ -63,7 +65,7 @@ def write_table(path, header, rows):
 
 
 def write_csv(path, header, rows):
-    with open(path, "w", newline="") as f:
+    with open(path, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(header)
         w.writerows(rows)

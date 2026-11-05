@@ -110,7 +110,9 @@ def rare_direction_instance(n_common=96, common_high=0.75, seed=0):
         [0.25, 0, 0, 0, 0.3, 0.2],     # 0.25
         [0.0, 0, 0, 0, 0.0, -0.5],     # 0.30, rare direction 6 alone
     ])
-    X = np.vstack([common, niche])
+    norm_th = np.linalg.norm(theta)
+    theta = theta / norm_th
+    X = np.vstack([common, niche]) * norm_th
     return X, theta
 
 
@@ -140,7 +142,9 @@ def two_group_instance(T, minority_share=0.1, K=10, n_items=200, seed=0):
     w_shared = np.array([0.8, 0.6, 0.15, 0.1])
     w_minority = np.array([-0.6, -0.45, 0.6, 0.7])
     theta = np.concatenate([w_shared, w_minority])
-    Z = np.array([[1.0, 0.0], [1.0, 1.0]])
+    norm_th = np.linalg.norm(theta)
+    theta = theta / norm_th
+    Z = np.array([[1.0, 0.0], [1.0, 1.0]]) * norm_th
     users = (rng.random(T) < minority_share).astype(np.int64)
     cands = np.stack([rng.choice(n_items, K, replace=False) for _ in range(T)])
     return LinearEnv(Z=Z, Y=Y, theta=theta, users=users, cands=cands,

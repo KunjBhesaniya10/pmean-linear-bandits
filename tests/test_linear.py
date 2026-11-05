@@ -18,8 +18,8 @@ def _envs():
 @pytest.mark.parametrize("name", sorted(ALGORITHMS))
 @pytest.mark.parametrize("env_id", [0, 1])
 def test_kernel_writes_candidate_means_and_is_seeded(name, env_id):
-    if name.startswith("lin_nash") and env_id == 1:
-        pytest.skip("LinNash is defined for a fixed arm set")
+    if (name.startswith("lin_nash") or name.startswith("fair_lin")) and env_id == 1:
+        pytest.skip("Defined for a fixed arm set")
     env = _envs()[env_id]
     T = 300
     out1, out2 = np.empty(T), np.empty(T)
@@ -50,7 +50,7 @@ def test_sherman_morrison_and_widths_match_direct_linear_algebra():
     assert np.allclose(w, np.sqrt(np.einsum("ai,ij,aj->a", xs, np.linalg.inv(V), xs)))
 
 
-@pytest.mark.parametrize("name", ["linucb", "explore_then_linucb"])
+@pytest.mark.parametrize("name", ["linucb", "explore_then_linucb", "fair_lin_ucb"])
 def test_learns_best_arm_on_easy_instance(name):
     X = np.eye(4)
     env = fixed_arm_env(X, np.array([0.2, 0.4, 0.6, 1.0]), 0.01, GAUSSIAN)
@@ -104,3 +104,30 @@ def test_lin_nash_part_one_reward_lower_bound():
     X, theta = random_instance(K=40, d=5, seed=3)
     u = mvee_weights(X)
     assert u @ (X @ theta) >= (X @ theta).max() / 6
+
+
+def test_fair_lin_bandit_learns_best_arm_and_stops():
+    X = np.eye(4)
+    env = fixed_arm_env(X, np.array([0.2, 0.4, 0.6, 1.0]), 0.01, GAUSSIAN)
+    res = run_linear("fair_lin_ucb", env, 20000, 0.0, 4, n_jobs=1)
+    assert res.expected_rewards[-1000:].mean() > 0.99
+    # Phase I stops adaptively before the horizon
+    assert 0 < res.taus.mean() < 20000
+
+
+def test_fair_lin_ucb_exploration_scales_with_p():
+    """Lower p requires longer Phase I exploration (due to 900 p_a^2 term in Eq. 1)."""
+    X = np.eye(4)
+    env = fixed_arm_env(X, np.array([0.2, 0.4, 0.6, 1.0]), 0.04, GAUSSIAN)
+    tau_nash = run_linear("fair_lin_ucb", env, 50000, 0.0, 4, n_jobs=1).taus.mean()
+    tau_p5 = run_linear("fair_lin_ucb", env, 50000, -5.0, 4, n_jobs=1).taus.mean()
+    assert tau_nash <= tau_p5
+
+
+def test_fair_lin_bandit_alias():
+    X = np.eye(4)
+    env = fixed_arm_env(X, np.array([0.2, 0.4, 0.6, 1.0]), 0.01, GAUSSIAN)
+    res1 = run_linear("fair_lin_ucb", env, 2000, 0.0, 2, seed=42, n_jobs=1)
+    res2 = run_linear("fair_lin_bandit", env, 2000, 0.0, 2, seed=42, n_jobs=1)
+    assert np.array_equal(res1.expected_rewards, res2.expected_rewards)
+    assert np.array_equal(res1.taus, res2.taus)

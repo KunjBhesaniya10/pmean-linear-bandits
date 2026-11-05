@@ -1,63 +1,9 @@
-"""Numba kernels for linear contextual bandits under p-mean welfare.
+"""Numba kernels for linear contextual bandits under p-mean social welfare.
 
-Every kernel has the signature
-
+Kernel signature:
     kernel(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed, out) -> tau
 
-(the environment encoding is described in `pmlb.linear.envs`). It plays T
-rounds, writes the expected reward <x_t, theta*> of the item it shows in
-round t into out[t], and returns tau, the length of its exploration phase
-(the number of exploration rounds, 0 if it has none), the same contract
-as the MAB kernels.
-
-All kernels share ridge regression with lambda = 1 and the confidence radius
-
-    beta = sigma * sqrt(2 log T) + sqrt(lambda) * ||theta*||,
-
-i.e. the self-normalized radius of Abbasi-Yadkori et al. without its
-d log(1 + t L^2 / (lambda d)) term. With that term every algorithm, plain
-LinUCB included, keeps exploring for the whole horizon at our T. Ties in
-every argmax are broken uniformly at random, so no algorithm gets a
-deterministic early sequence from the order of the candidates.
-
-Explore-then-LinUCB carries the two parts of Welfarist-UCB over to features.
-
-* Phase I picks, with probability 1/2, a uniformly random candidate (this
-  keeps E[reward of round t] at least half the candidates' average, which
-  is what the uniform phase buys the p-mean in the MAB case) and otherwise
-  the candidate with the largest ||x||_{V^-1}, a greedy D-optimal design
-  step that goes after the least-explored, typically rare, feature directions.
-* Stopping rule. Welfarist-UCB's rule (some arm i has LCB_i > 0 and
-  n_i mu_i >= 200 c^2 p_a^2 sigma^2 log T / LCB_i + c sqrt(2 n_i sigma^2 log T))
-  simplifies to LCB_i >= 10 |p_a| w_i, where w_i is arm i's confidence width.
-  We keep the factor as a parameter kappa (10 reproduces the paper's rule).
-  Round-robin exploration gives every arm the same width, so checking the
-  best arm is enough there. With features the widths differ by direction,
-  and an item along a rarely explored direction can look plausible long
-  after the common directions are pinned down. Our rule therefore asks the
-  best lower bound to dominate the width of every item that UCB could still
-  pick (UCB(x_a) >= max LCB):
-
-      LCB* = max_a LCB(x_a) > 0  and  LCB* >= kappa |p_a| beta ||x_a||_{V^-1}
-      for every a with UCB(x_a) >= LCB*,
-
-  Items already clearly worse than LCB* need no further exploration. With
-  contexts the rule is tested on the candidate set of the current round and
-  gives each protected group its own stopping time: a group leaves Phase I
-  the first time a context of one of its members passes, and a round is an
-  exploration round while any group of its user has not. Frequent groups
-  start exploiting early; a rare group keeps exploring until its own
-  (minority) feature directions are certified. Phase II can then only choose
-  items whose reward is within a constant factor of the best one, in every
-  group. With a fixed arm set there is one group and one stopping time, as
-  in Welfarist-UCB.
-
-`explore_then_linucb_naive` is the direct transfer for comparison: uniform
-exploration and the paper's best-arm rule on the current round's candidates.
-`explore_then_greedy*` replace Phase II by greedy exploitation, the way a
-deployed recommender usually runs once it stops exploring; there nothing
-after tau can repair a direction the stopping rule left unlearned. The
-`_design_only` / `_coverage_only` variants are ablations of the two changes.
+Plays T rounds, writes expected reward into out[t], and returns exploration rounds tau.
 """
 import numpy as np
 from numba import njit
@@ -65,12 +11,14 @@ from numba import njit
 from ..envs import sample_reward
 from .lin_nash import lin_nash, lin_nash_tuned
 
-LAMBDA = 1.0
-KAPPA = 10.0  # default kappa in LCB >= kappa |p_a| width: Welfarist-UCB's constant
+LAMBDA = 1.0  # Ridge regularization parameter
+KAPPA = 10.0  # Default stopping constant kappa in LCB >= kappa * |p_a| * width
+S_BOUND = 1.0  # Standard a-priori parameter norm bound: ||theta*||_2 <= S
 
 
 @njit(cache=True)
 def _build(Z, Y, u, items, X):
+    """Construct Kronecker feature matrix X[a] = kron(Z[u], Y[items[a]])."""
     dz, dy = Z.shape[1], Y.shape[1]
     for a in range(items.size):
         y = Y[items[a]]
@@ -82,6 +30,7 @@ def _build(Z, Y, u, items, X):
 
 @njit(cache=True)
 def _dot_rows(X, v, res):
+    """Compute res = X @ v."""
     for a in range(X.shape[0]):
         s = 0.0
         for j in range(X.shape[1]):
@@ -91,8 +40,7 @@ def _dot_rows(X, v, res):
 
 @njit(cache=True)
 def _widths(X, Vinv, w):
-    """w_a = ||x_a||_{V^-1}, using only the non-zero entries of x_a
-    (one-hot user features make most of kron(z, y) zero)."""
+    """Compute directional standard errors w[a] = sqrt(x_a^T V^-1 x_a)."""
     d = X.shape[1]
     nz = np.empty(d, np.int64)
     for a in range(X.shape[0]):
@@ -113,7 +61,7 @@ def _widths(X, Vinv, w):
 
 @njit(cache=True)
 def _update(Vinv, b, th, x, r, tmp):
-    """Sherman-Morrison update of V^-1, b += r x, th = V^-1 b."""
+    """O(d^2) Sherman-Morrison rank-1 update of V^-1, b += r*x, and th = V^-1 b."""
     d = x.size
     for i in range(d):
         tmp[i] = 0.0
@@ -138,7 +86,7 @@ def _update(Vinv, b, th, x, r, tmp):
 
 @njit(cache=True)
 def _argmax_rand(v):
-    """argmax with uniform random tie-breaking."""
+    """Uniform random tie-breaking argmax."""
     best, idx, cnt = -np.inf, 0, 0
     for i in range(v.size):
         if v[i] > best + 1e-12:
@@ -152,12 +100,13 @@ def _argmax_rand(v):
 
 @njit(cache=True)
 def _beta(theta, sigma2, T):
-    return np.sqrt(sigma2) * np.sqrt(2.0 * np.log(T)) + np.sqrt(LAMBDA) * np.sqrt(np.sum(theta * theta))
+    """Abbasi-Yadkori confidence ellipsoid radius: sigma*sqrt(2*log(T)) + sqrt(lambda)*S."""
+    return np.sqrt(sigma2) * np.sqrt(2.0 * np.log(T)) + np.sqrt(LAMBDA) * S_BOUND
 
 
 @njit(cache=True)
 def _covered(X, Vinv, th, beta, thresh, est, w, coverage):
-    """Stopping test on one candidate set (see module docstring)."""
+    """Evaluate stopping rule on candidate set."""
     _dot_rows(X, th, est)
     _widths(X, Vinv, w)
     if coverage:
@@ -166,10 +115,11 @@ def _covered(X, Vinv, th, beta, thresh, est, w, coverage):
             best_lcb = max(best_lcb, est[a] - beta * w[a])
         if best_lcb <= 0:
             return False
-        for a in range(est.size):  # every still-plausible candidate must be certified
+        for a in range(est.size):
             if est[a] + beta * w[a] >= best_lcb and best_lcb < thresh * beta * w[a]:
                 return False
         return True
+    # Best-arm stopping rule (Adaptation 1 & 2)
     for a in range(est.size):
         lcb = est[a] - beta * w[a]
         if lcb > 0 and lcb >= thresh * beta * w[a]:
@@ -179,7 +129,7 @@ def _covered(X, Vinv, th, beta, thresh, est, w, coverage):
 
 @njit(cache=True)
 def _linucb(Z, Y, theta, users, cands, T, sigma2, reward_type, seed, out, scale):
-    """LinUCB with radius scale * beta (scale 0 is greedy ridge regression)."""
+    """LinUCB exploitation loop (scale=1.0 for standard LinUCB, 0.0 for greedy)."""
     np.random.seed(seed)
     K, d = cands.shape[1], Z.shape[1] * Y.shape[1]
     R = users.size
@@ -189,6 +139,7 @@ def _linucb(Z, Y, theta, users, cands, T, sigma2, reward_type, seed, out, scale)
     b, th, tmp = np.zeros(d), np.zeros(d), np.zeros(d)
     X = np.zeros((K, d))
     mean, est, w, idx = np.zeros(K), np.zeros(K), np.zeros(K), np.zeros(K)
+
     for t in range(T):
         row = t % R
         _build(Z, Y, users[row], cands[row], X)
@@ -209,25 +160,20 @@ def _linucb(Z, Y, theta, users, cands, T, sigma2, reward_type, seed, out, scale)
 
 @njit(cache=True)
 def linucb(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed, out):
-    """LinUCB (optimism from the first round, no exploration phase)."""
+    """Standard LinUCB baseline."""
     return _linucb(Z, Y, theta, users, cands, T, sigma2, reward_type, seed, out, 1.0)
 
 
 @njit(cache=True)
 def lin_greedy(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed, out):
-    """Greedy ridge regression: always show the item with the largest estimate."""
+    """Greedy ridge regression baseline."""
     return _linucb(Z, Y, theta, users, cands, T, sigma2, reward_type, seed, out, 0.0)
 
 
 @njit(cache=True)
 def _explore_then_linucb(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed, out,
-                         design, coverage, greedy, per_group=True):
-    """Shared body. design: mixed uniform / max-width exploration (else uniform).
-    coverage: plausible-set rule with a stopping time per group (else the
-    paper's best-arm rule and one global stopping time). greedy: Phase II
-    exploits the ridge estimate (else LinUCB). per_group=False keeps every
-    round in Phase I until all groups are certified. Returns the number of
-    exploration rounds."""
+                         design, coverage, per_group=True):
+    """Two-phase contextual linear bandit engine with adaptive stopping."""
     np.random.seed(seed)
     K, d = cands.shape[1], Z.shape[1] * Y.shape[1]
     R = users.size
@@ -239,7 +185,7 @@ def _explore_then_linucb(Z, Y, theta, users, cands, ugroups, G, T, sigma2, rewar
     b, th, tmp = np.zeros(d), np.zeros(d), np.zeros(d)
     X = np.zeros((K, d))
     mean, est, w, idx = np.zeros(K), np.zeros(K), np.zeros(K), np.zeros(K)
-    certified = np.zeros(G, np.bool_)  # group has passed the stopping rule
+    certified = np.zeros(G, np.bool_)
     n_explore = 0
 
     for t in range(T):
@@ -257,14 +203,14 @@ def _explore_then_linucb(Z, Y, theta, users, cands, ugroups, G, T, sigma2, rewar
         if exploring:
             n_explore += 1
             if design and np.random.rand() < 0.5:
+                # Active D-optimal design selection: maximize prediction uncertainty ||x_a||_{V^-1}
                 _widths(X, Vinv, w)
                 a = _argmax_rand(w)
             else:
+                # Uniform random candidate selection
                 a = np.random.randint(K)
-        elif greedy:
-            _dot_rows(X, th, est)
-            a = _argmax_rand(est)
         else:
+            # Phase II LinUCB exploitation
             _dot_rows(X, th, est)
             _widths(X, Vinv, w)
             for i in range(K):
@@ -284,66 +230,62 @@ def _explore_then_linucb(Z, Y, theta, users, cands, ugroups, G, T, sigma2, rewar
 
 
 @njit(cache=True)
-def explore_then_linucb(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed, out):
-    """Ours: mixed uniform / D-optimal exploration, plausible-set rule with a stopping time per group."""
-    return _explore_then_linucb(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed,
-                                out, True, True, False)
-
-
-@njit(cache=True)
 def explore_then_linucb_naive(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed, out):
-    """Direct transfer of Welfarist-UCB: uniform exploration, best-arm stopping rule."""
+    """Contextual Adaptation 1: Baseline Uniform Transfer (Presentation Slide 14).
+
+    Phase I: Uniform random candidate exploration.
+    Stopping: Best-arm data-adaptive certificate (LCB* >= kappa * |p_a| * beta * width).
+    Phase II: LinUCB initialized with Phase I covariance.
+    """
     return _explore_then_linucb(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed,
-                                out, False, False, False)
+                                out, design=False, coverage=False)
 
 
 @njit(cache=True)
-def explore_then_linucb_design_only(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed,
-                                    out):
-    """Ablation: mixed design exploration with the best-arm stopping rule."""
+def explore_then_linucb_design_only(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed, out):
+    """Contextual Adaptation 2: 50/50 D-Optimal Exploration (Presentation Slide 15).
+
+    Phase I: 50% Uniform random + 50% Greedy D-optimal design (argmax ||x||_{V^-1}).
+    Stopping: Best-arm data-adaptive certificate (LCB* >= kappa * |p_a| * beta * width).
+    Phase II: LinUCB initialized with Phase I covariance.
+    """
     return _explore_then_linucb(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed,
-                                out, True, False, False)
+                                out, design=True, coverage=False)
 
 
 @njit(cache=True)
-def explore_then_linucb_coverage_only(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed,
-                                      out):
-    """Ablation: uniform exploration with the coverage stopping rule."""
+def explore_then_linucb(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed, out):
+    """Explore-then-LinUCB with plausible-set coverage and per-group stopping."""
     return _explore_then_linucb(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed,
-                                out, False, True, False)
+                                out, design=True, coverage=True, per_group=True)
 
 
 @njit(cache=True)
 def explore_then_linucb_global(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed, out):
-    """Ours with one global stopping time: everyone explores until every group is certified."""
+    """Explore-then-LinUCB with plausible-set coverage and global stopping."""
     return _explore_then_linucb(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed,
-                                out, True, True, False, False)
+                                out, design=True, coverage=True, per_group=False)
 
 
 @njit(cache=True)
-def explore_then_greedy(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed, out):
-    """Ours with a greedy Phase II: the stopping rule alone must make exploitation safe."""
+def explore_then_linucb_coverage_only(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed, out):
+    """Ablation: Uniform exploration with plausible-set coverage stopping."""
     return _explore_then_linucb(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed,
-                                out, True, True, True)
+                                out, design=False, coverage=True)
 
 
-@njit(cache=True)
-def explore_then_greedy_naive(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed, out):
-    """Naive transfer with a greedy Phase II."""
-    return _explore_then_linucb(Z, Y, theta, users, cands, ugroups, G, T, sigma2, reward_type, p, kappa, seed,
-                                out, False, False, True)
-
+from .fair_lin_bandit import fair_lin_bandit, fair_lin_ucb  # noqa: E402
 
 ALGORITHMS = {
-    "lin_nash": lin_nash,
-    "lin_nash_tuned": lin_nash_tuned,
+    "explore_then_linucb_naive": explore_then_linucb_naive,
+    "explore_then_linucb_design_only": explore_then_linucb_design_only,
+    "explore_then_linucb": explore_then_linucb,
+    "explore_then_linucb_global": explore_then_linucb_global,
+    "explore_then_linucb_coverage_only": explore_then_linucb_coverage_only,
     "linucb": linucb,
     "lin_greedy": lin_greedy,
-    "explore_then_linucb": explore_then_linucb,
-    "explore_then_linucb_naive": explore_then_linucb_naive,
-    "explore_then_linucb_global": explore_then_linucb_global,
-    "explore_then_greedy": explore_then_greedy,
-    "explore_then_greedy_naive": explore_then_greedy_naive,
-    "explore_then_linucb_design_only": explore_then_linucb_design_only,
-    "explore_then_linucb_coverage_only": explore_then_linucb_coverage_only,
+    "lin_nash": lin_nash,
+    "lin_nash_tuned": lin_nash_tuned,
+    "fair_lin_ucb": fair_lin_ucb,
+    "fair_lin_bandit": fair_lin_bandit,
 }
