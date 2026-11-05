@@ -1,6 +1,6 @@
 # Contextualizing Fairness: Extending $p$-Mean Social Welfare to Linear Bandits
 
-**Course Project:** CS6106: Multi-Agent Machine Learning, IIT Bombay  
+**Course Project:** CS6106: Multi-Agent Machine Learning, IIT Bombay (slides were titled CS6007)  
 **Instructor:** Prof. Avishek Ghosh  
 **Authors:** Kunj Bhesaniya (Roll No. 23B0995) & Dhruvraj Merchant (Roll No. 23B1041)  
 **GitHub Repository:** [https://github.com/KunjBhesaniya10/pmean-linear-bandits](https://github.com/KunjBhesaniya10/pmean-linear-bandits)
@@ -18,8 +18,8 @@ This project provides:
    - **Adaptation 2 (50/50 D-Optimal Active Exploration):** Interleaves uniform selection with greedy D-optimal uncertainty sampling ($\arg\max_{a \in \mathcal{C}_t} \|x_a\|_{V_t^{-1}}$), actively learning rare directions before transitioning adaptively to LinUCB.
 3. **Empirical Validation**:
    - **Experiment 1 (Benign Feature Arms):** Verifies fast Phase I termination and near-zero regret.
-   - **Experiment 2 (Rare Niche Features):** Demonstrates that active D-optimal sampling prevents over-exploration on mediocre arms, achieving **$1.8\times$ lower regret** than uniform exploration.
-   - **MovieLens-1M Streaming Benchmark:** Validates real-world dynamic user streaming, demonstrating superior welfare scaling across $p$ and protecting vulnerable demographic groups (e.g., **$0.863$ vs $0.845$** on Farmers).
+   - **Experiment 2 (Rare Niche Features):** Demonstrates that active D-optimal sampling prevents over-exploration on mediocre arms, achieving about **$1.7\times$ lower Nash regret** than uniform exploration.
+   - **MovieLens-1M Streaming Benchmark:** Both adaptations stop exploring after ~1,200 rounds and end up nearly tied; the smallest group (farmers) gets $0.862$ vs $0.855$, but Adaptation 2 is not better on every group (18 of 30).
 
 ---
 
@@ -117,15 +117,15 @@ python -m experiments.movielens
 - **Expt (f) Fairness Scaling Across $p$ ($T=10^6$):** Phase I exploration scales with $p^2$ for $p < -1$ ($\tau=275$ at $p=-1$, $\tau=1,010$ at $p=-2$, $\tau=5,922$ at $p=-5$).
 
 ### Contextual Linear Synthetic Experiments
-- **Experiment 1: Benign Feature Arms ($d=6, K=50, T=50,000$):** Both adaptations exit exploration early ($\tau \approx 2,850$) and achieve near-zero cumulative regret ($0.0053$ vs $0.0068$).
+- **Experiment 1: Benign Feature Arms ($d=6, K=50, T=50,000$):** Both adaptations exit exploration early ($\tau = 2,661$ vs $2,812$) and reach small Nash regret ($0.0146$ vs $0.0169$); uniform is slightly better here.
 - **Experiment 2: Rare Niche Features ($d=6, K=100, T=30,000$):**
-  - Adaptation 1 (Uniform): Common arms fail to clear the stopping threshold; gets trapped in exploration ($\tau \approx 16,000$, regret $0.428$).
-  - Adaptation 2 (50/50 D-Optimal): Targets rare feature coordinates actively, exits early ($\tau \approx 11,000$), achieving **$1.8\times$ lower regret ($0.245$)**.
+  - Adaptation 1 (Uniform): Common arms fail to clear the stopping threshold; stays in exploration longer ($\tau \approx 15,500$, Nash regret $0.419$).
+  - Adaptation 2 (50/50 D-Optimal): Targets rare feature coordinates actively, exits earlier ($\tau \approx 11,000$), achieving **about $1.7\times$ lower Nash regret ($0.242$)**.
 
 ### MovieLens-1M Dynamic Streaming Benchmark ($d=180, K=20, T=50,000$)
-- **Prompt Exit:** Both adaptations stop Phase I early ($\tau \approx 1,178$ vs $1,295$), smoothly delegating exploitation to LinUCB.
-- **Superior Regret Scaling:** Adaptation 2 achieves Nash regret $0.0491$ (vs $0.0493$) and maintains low regret across fairness parameters ($0.045$ at $p=1$, $0.075$ at $p=-2$).
-- **Demographic Equity:** Adaptation 2 delivers higher normalized utility to the rarest demographic group (**Farmers: $0.863$ vs $0.845$**) and the highest generalized group welfare ($M_{-2} = \mathbf{0.9361}$).
+- **Prompt Exit:** Both adaptations stop Phase I early ($\tau \approx 1,205$ vs $1,251$ at $p=0$), then LinUCB takes over. MovieLens uses $\kappa=1$; with $\kappa=10$ exploration never ends within $T$.
+- **Regret:** Nash regret $0.0485$ (Adaptation 2) vs $0.0489$ (Adaptation 1); at $p=1$: $0.0442$ vs $0.0447$; at $p=-2$: $0.0674$ vs $0.0654$. The differences are in the third decimal.
+- **Demographic groups:** Adaptation 2 gives the rarest group slightly higher normalised utility (**Farmers: $0.862$ vs $0.855$**) and group welfare $M_{-2} = 0.9358$ vs $0.9353$; it is higher on 18 of the 30 groups.
 
 ---
 
@@ -151,7 +151,7 @@ python -m experiments.movielens
 │   └── linear/
 │       ├── algorithms.py       # Contextual Adaptation 1, Adaptation 2, and LinUCB kernels
 │       ├── envs.py             # Linear contextual environments and feature generators
-│       ├── fair_lin_bandit.py  # Sarkar et al. (2026) FairLinBandit baseline
+│       ├── fair_lin_bandit.py  # Sarkar et al. (2026) FairLinBandit baseline  (fixed arm sets only; implemented and tested, not used in the final contextual experiments)
 │       └── lin_nash.py         # Sawarni et al. (2023) LinNash baseline
 ├── experiments/
 │   ├── common.py               # Shared caching and reporting routines
@@ -162,6 +162,7 @@ python -m experiments.movielens
 │   ├── test_linear.py          # Sherman-Morrison, widths, and linear algorithm tests
 │   ├── test_mab.py             # MAB kernel and stopping rule tests
 │   └── test_welfare.py         # p-mean properties and regret curve tests
+├── report/                     # Report source (report.md) and rendered PDF
 ├── results/                    # Summary markdown tables and curve CSVs
 └── plots/                      # Generated publication-quality figures
 ```
@@ -170,8 +171,8 @@ python -m experiments.movielens
 
 ## 7. References
 
-1. A. Sarkar, A. Pandey, and S. Ray Chowdhury. *Revisiting Social Welfare in Bandits: UCB is (Nearly) All You Need*. arXiv:2510.21312, 2025.
-2. D. Sarkar, A. Pandey, and S. Ray Chowdhury. *Improved Algorithms for Nash Welfare in Linear Bandits*. ICML, arXiv:2601.22969, 2026.
+1. D. Sarkar, N. Pandey, and S. Ray Chowdhury. *Revisiting Social Welfare in Bandits: UCB is (Nearly) All You Need*. arXiv:2510.21312, 2025.
+2. D. Sarkar, N. Pandey, and S. Ray Chowdhury. *Improved Algorithms for Nash Welfare in Linear Bandits*. ICML, arXiv:2601.22969, 2026.
 3. A. Sawarni, S. Pal, and S. Barman. *Nash Regret Guarantees for Linear Bandits*. NeurIPS, 2023.
 4. S. Barman, A. Khan, A. Maiti, and A. Sawarni. *Fairness and Welfare Quantification for Regret in Multi-Armed Bandits*. AAAI, 2023.
 5. A. Krishna, P. G. John, A. Barik, and V. Y. F. Tan. *$p$-Mean Regret for Stochastic Bandits*. AAAI, 2025.

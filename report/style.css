@@ -1,0 +1,13 @@
+body{font-family:"Times New Roman",serif;font-size:11pt;line-height:1.4;max-width:none;margin:0;color:#000;background:#fff}
+h1{font-size:15pt;margin-top:18px;border-bottom:1px solid #999}
+h2{font-size:12.5pt}
+h1,h2{page-break-after:avoid}
+header h1.title{font-size:18pt;text-align:center;border:none}
+header .subtitle,header .author,header .date{text-align:center;margin:2px}
+table{border-collapse:collapse;margin:8px auto;font-size:9.5pt}
+th,td{border:1px solid #888;padding:3px 6px;text-align:center}
+figure{text-align:center;margin:10px 0;page-break-inside:avoid}
+figcaption{font-size:9.5pt;font-style:italic}
+img{max-width:100%}
+li{margin:2px 0}
+math[display=block]{margin:6px 0}

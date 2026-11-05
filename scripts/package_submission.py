@@ -73,6 +73,8 @@ def package(team_id="XX"):
 
     # If a report already exists in the workspace, copy it
     existing_reports = [
+        os.path.join(base_dir, "report", f"{sub_name}_Report.pdf"),
+        os.path.join(base_dir, "report", "CS6106_TeamXX_Report.pdf"),
         os.path.join(base_dir, "report.pdf"),
         os.path.join(base_dir, f"{sub_name}_Report.pdf"),
     ]
@@ -80,6 +82,7 @@ def package(team_id="XX"):
         if os.path.exists(rep):
             shutil.copy2(rep, report_file)
             print(f"--> Included existing report: {rep}")
+            os.remove(placeholder_note)
             break
 
     # 2. slides/
