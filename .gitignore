@@ -6,3 +6,6 @@ __pycache__/
 .pytest_cache/
 /CS6106_Team*
 report/report.html
+report/*.aux
+report/*.log
+report/*.out

@@ -162,7 +162,7 @@ python -m experiments.movielens
 │   ├── test_linear.py          # Sherman-Morrison, widths, and linear algorithm tests
 │   ├── test_mab.py             # MAB kernel and stopping rule tests
 │   └── test_welfare.py         # p-mean properties and regret curve tests
-├── report/                     # Report source (report.md) and rendered PDF
+├── report/                     # Report LaTeX source (main.tex) and PDF
 ├── results/                    # Summary markdown tables and curve CSVs
 └── plots/                      # Generated publication-quality figures
 ```

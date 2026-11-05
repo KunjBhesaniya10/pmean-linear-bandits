@@ -53,7 +53,7 @@ def copy_tree_clean(src, dst):
             shutil.copy2(src_file, dst_file)
 
 
-def package(team_id="XX"):
+def package(team_id="04"):
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     sub_name = f"CS6106_Team{team_id}"
     out_dir = os.path.join(base_dir, sub_name)
@@ -138,6 +138,6 @@ def package(team_id="XX"):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("team_id", nargs="?", default="XX", help="Team number, e.g. 01, 15 (default: XX)")
+    parser.add_argument("team_id", nargs="?", default="04", help="Team number (default: 04)")
     args = parser.parse_args()
     package(args.team_id)
